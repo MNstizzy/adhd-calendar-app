@@ -468,13 +468,7 @@ const Dashboard: React.FC = () => {
 
     const handleLogout = async () => {
         try {
-            await signOutUser();
-            setIsLoggedIn(false);
-            setShowProfile(false);
-            setLoginError('');
-            setLoginEmail('');
-            setLoginPassword('');
-            // Reset profile to guest
+            // Clear all game data immediately before signing out
             setProfile({
                 username: 'Guest',
                 hashtag: '0000',
@@ -483,6 +477,33 @@ const Dashboard: React.FC = () => {
                 tasksCompleted: 0,
                 eventsCreated: 0
             });
+            setIsLoggedIn(false);
+            setShowProfile(false);
+            setLoginError('');
+            setLoginEmail('');
+            setLoginPassword('');
+            
+            // Clear all game data from localStorage
+            localStorage.removeItem(PROFILE_KEY);
+            localStorage.removeItem(PURCHASES_KEY);
+            localStorage.removeItem(DAILY_CREATIONS_KEY);
+            localStorage.removeItem(STREAK_KEY);
+            localStorage.removeItem(USERS_KEY);
+            localStorage.removeItem(CURRENT_USER_KEY);
+            localStorage.removeItem(BRONZE_CRATE_KEY);
+            localStorage.removeItem(QUESTS_KEY);
+            
+            // Reset all game state
+            resetXp();
+            setGems(0);
+            setPet(null);
+            setOwnedPets([]);
+            setPurchases(new Set());
+            setStreak(() => getStreakData());
+            setCurrentGems(0);
+            
+            // Now sign out from Firebase
+            await signOutUser();
         } catch (error: any) {
             setLoginError('Logout failed');
         }
