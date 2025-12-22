@@ -1,0 +1,34 @@
+{
+  "name": "adhd-calendar-app",
+  "version": "1.0.0",
+  "description": "A modern and clean calendar application designed for individuals with ADHD.",
+  "main": "src/main.tsx",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.5",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^5.2.0",
+    "tailwindcss": "^2.2.19"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^1.3.2",
+    "eslint": "^7.32.0",
+    "eslint-plugin-react": "^7.27.1",
+    "typescript": "^4.4.4",
+    "vite": "^2.6.4"
+  },
+  "keywords": [
+    "calendar",
+    "adhd",
+    "productivity",
+    "react"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

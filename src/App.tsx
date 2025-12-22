@@ -1,0 +1,158 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import DayView from './pages/DayView';
+import WeekView from './pages/WeekView';
+import MonthView from './pages/MonthView';
+import Settings from './pages/Settings';
+import Store from './pages/Store';
+import Leaderboards from './pages/Leaderboards';
+import Quests from './pages/Quests';
+import PersonalInsights from './pages/PersonalInsights';
+import Pet from './pages/Pet';
+import SkillTree from './pages/SkillTree';
+import XPBar from './components/UI/XPBar';
+import Sidebar from './components/UI/Sidebar';
+import SocialMenu from './components/UI/SocialMenu';
+import QuestsMenu from './components/UI/QuestsMenu';
+import CurrencyDisplay from './components/UI/CurrencyDisplay';
+import DevMenuModal from './components/DevMenu/DevMenuModal';
+
+const App: React.FC = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [socialMenuOpen, setSocialMenuOpen] = useState(false);
+  const [questsMenuOpen, setQuestsMenuOpen] = useState(false);
+  const keySequenceRef = React.useRef<string[]>([]);
+
+  // Global dev menu trigger with Ctrl+Alt+D+F
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only track D and F keys with Ctrl+Alt held
+      if (e.ctrlKey && e.altKey) {
+        if (e.key === 'd' || e.key === 'D') {
+          keySequenceRef.current = ['d'];
+        } else if (e.key === 'f' || e.key === 'F') {
+          if (keySequenceRef.current.length === 1 && keySequenceRef.current[0] === 'd') {
+            e.preventDefault();
+            // Dispatch custom event to open dev menu
+            window.dispatchEvent(new CustomEvent('devMenuKeyCombo'));
+            keySequenceRef.current = [];
+          }
+        }
+      } else {
+        // Reset sequence if modifiers are released
+        keySequenceRef.current = [];
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return (
+    <Router>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {/* top-left triple-dash hamburger and top-right currency display */}
+        <div className="topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 120, paddingLeft: 16 }}>
+          <div style={{width: 40, height: 40}}>
+            {!menuOpen && (
+              <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="Open menu">
+                <span className="hamburger-line" />
+                <span className="hamburger-line" />
+                <span className="hamburger-line" />
+              </button>
+            )}
+          </div>
+          <CurrencyDisplay />
+        </div>
+
+        <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+
+        <QuestsMenu open={questsMenuOpen} onClose={() => setQuestsMenuOpen(false)} />
+
+        <SocialMenu open={socialMenuOpen} onClose={() => setSocialMenuOpen(false)} />
+
+        <div style={{ 
+          flex: 1, 
+          marginBottom: '120px'
+        }}>
+          <Switch>
+            <Route path="/" exact component={Dashboard} />
+            <Route path="/day" component={DayView} />
+            <Route path="/week" component={WeekView} />
+            <Route path="/month" component={MonthView} />
+            <Route path="/store" component={Store} />
+            <Route path="/leaderboards" component={Leaderboards} />
+            <Route path="/quests" component={Quests} />
+            <Route path="/insights" component={PersonalInsights} />
+            <Route path="/pet" component={Pet} />
+            <Route path="/skills" component={SkillTree} />
+            <Route path="/settings" component={Settings} />
+          </Switch>
+        </div>
+
+        <XPBar />
+
+        {/* Quests Menu Button - Bottom Right, Above Social Menu Button */}
+        {!questsMenuOpen && !socialMenuOpen && (
+          <button
+            onClick={() => setQuestsMenuOpen(true)}
+            className="btn"
+            style={{
+              position: 'fixed',
+              bottom: 180,
+              right: 24,
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              zIndex: 100,
+            }}
+            aria-label="Open quests menu"
+            title="Quests"
+          >
+            🏆
+          </button>
+        )}
+
+        {/* Social Menu Button - Bottom Right, Above XP Bar */}
+        {!socialMenuOpen && !questsMenuOpen && (
+          <button
+            onClick={() => setSocialMenuOpen(true)}
+            className="btn"
+            style={{
+              position: 'fixed',
+              bottom: 100,
+              right: 24,
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              zIndex: 100,
+            }}
+            aria-label="Open social menu"
+            title="Social Menu"
+          >
+            👥
+          </button>
+        )}
+
+        <DevMenuModal />
+      </div>
+    </Router>
+  );
+};
+
+export default App;
