@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getFromLocalStorage, saveToLocalStorage } from '../services/storage';
 import { syncTasksToFirestore } from '../services/gameProgress';
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const TASKS_KEY = 'adhd_tasks';
 const EVENTS_KEY = 'adhd_events';
@@ -10,6 +10,19 @@ const useCalendar = () => {
     const [events, setEvents] = useState<Record<string, string[]>>(() => getFromLocalStorage(EVENTS_KEY) || {});
     const [tasks, setTasks] = useState<any[]>(() => getFromLocalStorage(TASKS_KEY) || []);
     const [loading, setLoading] = useState(false);
+
+    // Listen to auth state changes and reload tasks from localStorage
+    useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log('[useCalendar] Auth state changed, reloading tasks...');
+            // Reload tasks from localStorage to reflect any changes from login/logout
+            const storedTasks = getFromLocalStorage(TASKS_KEY) || [];
+            console.log('[useCalendar] Reloaded tasks from localStorage:', storedTasks.length, 'tasks');
+            setTasks(storedTasks);
+        });
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         // persist tasks when they change
