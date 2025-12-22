@@ -480,15 +480,19 @@ const Dashboard: React.FC = () => {
     const handleSaveName = async () => {
         if (editNameValue.trim()) {
             await saveProfile({ ...profile, username: editNameValue.trim() });
-            setEditingName(false);
         }
     };
 
     const handleSaveHashtag = async () => {
         if (editHashtagValue.trim()) {
             await saveProfile({ ...profile, hashtag: editHashtagValue.trim() });
-            setEditingHashtag(false);
         }
+    };
+
+    const handleSaveNameAndHashtag = async () => {
+        await handleSaveName();
+        await handleSaveHashtag();
+        setEditingName(false);
     };
 
     const handleAvatarSelect = async (avatar: string) => {
@@ -1711,7 +1715,7 @@ const Dashboard: React.FC = () => {
                                         />
                                     </div>
                                     <div style={{display: 'flex', gap: 8}}>
-                                        <button className="btn" onClick={() => { handleSaveName(); handleSaveHashtag(); }} style={{flex: 1}}>Save</button>
+                                        <button className="btn" onClick={handleSaveNameAndHashtag} style={{flex: 1}}>Save</button>
                                         <button className="btn ghost" onClick={() => setEditingName(false)} style={{flex: 1}}>Cancel</button>
                                     </div>
                                 </div>
