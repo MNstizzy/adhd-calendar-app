@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getFromLocalStorage, saveToLocalStorage } from '../services/storage';
 import { syncTasksToFirestore } from '../services/gameProgress';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 
 const TASKS_KEY = 'adhd_tasks';
 const EVENTS_KEY = 'adhd_events';
@@ -10,23 +10,15 @@ const useCalendar = () => {
     const [events, setEvents] = useState<Record<string, string[]>>(() => getFromLocalStorage(EVENTS_KEY) || {});
     const [tasks, setTasks] = useState<any[]>(() => getFromLocalStorage(TASKS_KEY) || []);
     const [loading, setLoading] = useState(false);
+    const isRestoringRef = useRef(true); // Flag to prevent syncing during initial Firestore restoration
 
-    // Listen to auth state changes and reload tasks on LOGIN only
+    // After a short delay, allow syncing (Dashboard will have restored tasks by then)
     useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Only reload tasks on LOGIN, not on logout
-                console.log('[useCalendar] User logged in, reloading tasks from localStorage...');
-                const storedTasks = getFromLocalStorage(TASKS_KEY) || [];
-                console.log('[useCalendar] Reloaded tasks from localStorage:', storedTasks.length, 'tasks');
-                setTasks(storedTasks);
-            } else {
-                // On logout, tasks are already cleared by Dashboard, don't reload
-                console.log('[useCalendar] User logged out, not reloading tasks');
-            }
-        });
-        return () => unsubscribe();
+        const timer = setTimeout(() => {
+            isRestoringRef.current = false;
+            console.log('[useCalendar] Restoration period ended, syncing enabled');
+        }, 1000);
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
@@ -34,13 +26,15 @@ const useCalendar = () => {
         try {
             console.log('[useCalendar] Tasks changed, saving to localStorage:', tasks.length, 'tasks', tasks);
             saveToLocalStorage(TASKS_KEY, tasks);
-            // Also sync to Firestore if user is logged in
+            // Also sync to Firestore if user is logged in AND we're not in restoration phase
             const auth = getAuth();
-            if (auth.currentUser) {
+            if (auth.currentUser && !isRestoringRef.current) {
                 console.log('[useCalendar] Syncing', tasks.length, 'tasks to Firestore...');
                 syncTasksToFirestore(tasks).catch(err => console.warn('[useCalendar] Failed to sync tasks:', err));
-            } else {
+            } else if (!isRestoringRef.current) {
                 console.log('[useCalendar] Not syncing - user not logged in');
+            } else {
+                console.log('[useCalendar] Skipping sync - still in restoration period');
             }
         } catch {}
     }, [tasks]);
