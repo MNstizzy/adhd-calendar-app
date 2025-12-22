@@ -12,13 +12,24 @@ const useCalendar = () => {
     const [loading, setLoading] = useState(false);
     const isRestoringRef = useRef(true); // Flag to prevent syncing during initial Firestore restoration
 
-    // After a short delay, allow syncing (Dashboard will have restored tasks by then)
+    // Listen for custom event from Dashboard when tasks are restored from Firestore
     useEffect(() => {
-        const timer = setTimeout(() => {
-            isRestoringRef.current = false;
-            console.log('[useCalendar] Restoration period ended, syncing enabled');
-        }, 1000);
-        return () => clearTimeout(timer);
+        const handleTasksRestored = () => {
+            console.log('[useCalendar] Tasks restored event received, reloading from localStorage');
+            isRestoringRef.current = true; // Prevent syncing while we reload
+            const restoredTasks = getFromLocalStorage(TASKS_KEY) || [];
+            console.log('[useCalendar] Reloaded', restoredTasks.length, 'tasks from localStorage');
+            setTasks(restoredTasks);
+            
+            // Re-enable syncing after a short delay
+            setTimeout(() => {
+                isRestoringRef.current = false;
+                console.log('[useCalendar] Restoration complete, syncing re-enabled');
+            }, 500);
+        };
+        
+        window.addEventListener('tasks:restored', handleTasksRestored);
+        return () => window.removeEventListener('tasks:restored', handleTasksRestored);
     }, []);
 
     useEffect(() => {

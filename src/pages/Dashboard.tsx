@@ -252,6 +252,8 @@ const Dashboard: React.FC = () => {
                         if (gameProgress.tasks && Array.isArray(gameProgress.tasks)) {
                             console.log('[Auth] Restoring tasks from Firestore:', gameProgress.tasks.length, 'tasks', gameProgress.tasks);
                             localStorage.setItem('adhd_tasks', JSON.stringify(gameProgress.tasks));
+                            // Fire event to notify useCalendar to reload from localStorage
+                            window.dispatchEvent(new CustomEvent('tasks:restored'));
                         } else {
                             console.log('[Auth] ⚠️ No tasks to restore (tasks is', gameProgress.tasks, ')');
                         }
