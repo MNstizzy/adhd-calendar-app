@@ -248,8 +248,10 @@ const Dashboard: React.FC = () => {
                         }
                         // Restore tasks
                         if (gameProgress.tasks && Array.isArray(gameProgress.tasks)) {
-                            console.log('[Auth] Restoring tasks from Firestore:', gameProgress.tasks.length, 'tasks');
+                            console.log('[Auth] Restoring tasks from Firestore:', gameProgress.tasks.length, 'tasks', gameProgress.tasks);
                             localStorage.setItem('adhd_tasks', JSON.stringify(gameProgress.tasks));
+                        } else {
+                            console.log('[Auth] ⚠️ No tasks to restore (tasks is', gameProgress.tasks, ')');
                         }
                     }
                 } catch (error) {

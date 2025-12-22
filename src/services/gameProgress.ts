@@ -81,6 +81,7 @@ export const loadGameProgress = async (): Promise<Partial<GameProgress> | null> 
     const gameProgress = userData?.gameProgress;
     console.log('[gameProgress] gameProgress field:', gameProgress);
     console.log('[gameProgress] gameProgress.xp =', gameProgress?.xp);
+    console.log('[gameProgress] gameProgress.tasks =', gameProgress?.tasks);
 
     if (gameProgress) {
       console.log('[gameProgress] ✅ Loaded from Firestore:', gameProgress);
