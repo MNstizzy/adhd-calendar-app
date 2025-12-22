@@ -11,15 +11,20 @@ const useCalendar = () => {
     const [tasks, setTasks] = useState<any[]>(() => getFromLocalStorage(TASKS_KEY) || []);
     const [loading, setLoading] = useState(false);
 
-    // Listen to auth state changes and reload tasks from localStorage
+    // Listen to auth state changes and reload tasks on LOGIN only
     useEffect(() => {
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log('[useCalendar] Auth state changed, reloading tasks...');
-            // Reload tasks from localStorage to reflect any changes from login/logout
-            const storedTasks = getFromLocalStorage(TASKS_KEY) || [];
-            console.log('[useCalendar] Reloaded tasks from localStorage:', storedTasks.length, 'tasks');
-            setTasks(storedTasks);
+            if (user) {
+                // Only reload tasks on LOGIN, not on logout
+                console.log('[useCalendar] User logged in, reloading tasks from localStorage...');
+                const storedTasks = getFromLocalStorage(TASKS_KEY) || [];
+                console.log('[useCalendar] Reloaded tasks from localStorage:', storedTasks.length, 'tasks');
+                setTasks(storedTasks);
+            } else {
+                // On logout, tasks are already cleared by Dashboard, don't reload
+                console.log('[useCalendar] User logged out, not reloading tasks');
+            }
         });
         return () => unsubscribe();
     }, []);
