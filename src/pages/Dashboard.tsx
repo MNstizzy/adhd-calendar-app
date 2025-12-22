@@ -209,7 +209,7 @@ const Dashboard: React.FC = () => {
                         console.log('[Auth] gameProgress.xp =', gameProgress.xp);
                         if (gameProgress.xp !== undefined && gameProgress.xp !== null) {
                             console.log('[Auth] ✅ Restoring XP:', gameProgress.xp);
-                            setXp(gameProgress.xp);
+                            setXp(gameProgress.xp, false); // Don't sync - data is already from Firestore
                         } else {
                             console.log('[Auth] ⚠️ No XP to restore (xp is', gameProgress.xp, ')');
                         }
@@ -273,7 +273,7 @@ const Dashboard: React.FC = () => {
                 localStorage.removeItem(QUESTS_KEY);
                 
                 // Reset all game state
-                resetXp();
+                resetXp(false); // Don't sync - we're logging out
                 setGems(0);
                 setPet(null);
                 setOwnedPets([]);
