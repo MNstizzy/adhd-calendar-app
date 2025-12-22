@@ -189,9 +189,18 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const unsubscribe = onAuthChange(async (firebaseUser) => {
             if (firebaseUser) {
-                // User is logged in
+                // User is logged in - load their profile from Firestore
                 setIsLoggedIn(true);
-                // Optionally load user profile from Firestore here
+                try {
+                    const userProfile = await getCurrentUserProfile(firebaseUser.uid);
+                    if (userProfile) {
+                        console.log('[Auth] Loaded profile from Firestore:', userProfile);
+                        setProfile(userProfile);
+                        localStorage.setItem(PROFILE_KEY, JSON.stringify(userProfile));
+                    }
+                } catch (error) {
+                    console.error('[Auth] Error loading profile from Firestore:', error);
+                }
             } else {
                 // User is logged out
                 setIsLoggedIn(false);
