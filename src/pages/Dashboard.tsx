@@ -202,7 +202,7 @@ const Dashboard: React.FC = () => {
                     console.error('[Auth] Error loading profile from Firestore:', error);
                 }
             } else {
-                // User is logged out - reset profile to guest
+                // User is logged out - reset EVERYTHING to default
                 setIsLoggedIn(false);
                 setProfile({
                     username: 'Guest',
@@ -212,7 +212,25 @@ const Dashboard: React.FC = () => {
                     tasksCompleted: 0,
                     eventsCreated: 0
                 });
+                
+                // Clear all game data from localStorage
                 localStorage.removeItem(PROFILE_KEY);
+                localStorage.removeItem(PURCHASES_KEY);
+                localStorage.removeItem(DAILY_CREATIONS_KEY);
+                localStorage.removeItem(STREAK_KEY);
+                localStorage.removeItem(USERS_KEY);
+                localStorage.removeItem(CURRENT_USER_KEY);
+                localStorage.removeItem(BRONZE_CRATE_KEY);
+                localStorage.removeItem(QUESTS_KEY);
+                
+                // Reset all game state
+                resetXp();
+                setGems(0);
+                setPet(null);
+                setOwnedPets([]);
+                setPurchases(new Set());
+                setStreak(() => getStreakData());
+                setCurrentGems(0);
             }
         });
 
