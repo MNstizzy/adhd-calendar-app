@@ -27,11 +27,15 @@ const useCalendar = () => {
     useEffect(() => {
         // persist tasks when they change
         try {
+            console.log('[useCalendar] Tasks changed, saving to localStorage:', tasks.length, 'tasks', tasks);
             saveToLocalStorage(TASKS_KEY, tasks);
             // Also sync to Firestore if user is logged in
             const auth = getAuth();
             if (auth.currentUser) {
+                console.log('[useCalendar] Syncing', tasks.length, 'tasks to Firestore...');
                 syncTasksToFirestore(tasks).catch(err => console.warn('[useCalendar] Failed to sync tasks:', err));
+            } else {
+                console.log('[useCalendar] Not syncing - user not logged in');
             }
         } catch {}
     }, [tasks]);
