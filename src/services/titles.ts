@@ -1,5 +1,7 @@
 const TITLES_KEY = 'adhd_titles';
 
+import { syncTitlesToFirestore } from './gameProgress';
+
 export interface Title {
     id: string;
     name: string;
@@ -140,6 +142,12 @@ export const setSelectedTitle = (titleId: string | null): void => {
         const titles = getTitles();
         titles.selectedTitleId = titleId;
         localStorage.setItem(TITLES_KEY, JSON.stringify(titles));
+        
+        // Sync to Firestore
+        const unlockedTitles = titles.unlockedIds;
+        console.log('[titles] Syncing selected title to Firestore:', titleId);
+        syncTitlesToFirestore(unlockedTitles, titleId).catch(err => console.warn('[titles] Failed to sync:', err));
+        
         window.dispatchEvent(new CustomEvent('selectedTitleChanged', { detail: { titleId } }));
     } catch (error) {
         console.error('Error setting selected title:', error);

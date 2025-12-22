@@ -242,11 +242,15 @@ const Dashboard: React.FC = () => {
                         if (gameProgress.unlockedTitles || gameProgress.selectedTitle) {
                             const titlesKey = 'adhd_unlocked_titles';
                             if (gameProgress.unlockedTitles) {
+                                console.log('[Auth] Restoring unlocked titles:', gameProgress.unlockedTitles.length);
                                 localStorage.setItem(titlesKey, JSON.stringify(gameProgress.unlockedTitles));
                             }
                             if (gameProgress.selectedTitle) {
+                                console.log('[Auth] Restoring selected title:', gameProgress.selectedTitle);
                                 localStorage.setItem('adhd_selected_title', gameProgress.selectedTitle);
                             }
+                            // Fire event to notify UI to reload titles
+                            window.dispatchEvent(new CustomEvent('titles:restored'));
                         }
                         // Restore tasks
                         if (gameProgress.tasks && Array.isArray(gameProgress.tasks)) {
@@ -283,7 +287,11 @@ const Dashboard: React.FC = () => {
                 localStorage.removeItem(BRONZE_CRATE_KEY);
                 localStorage.removeItem(QUESTS_KEY);
                 localStorage.removeItem('adhd_tasks'); // Clear tasks on logout
+                localStorage.removeItem('adhd_unlocked_titles'); // Clear titles on logout
+                localStorage.removeItem('adhd_selected_title'); // Clear selected title on logout
                 
+                // Fire event to notify UI to clear titles
+                window.dispatchEvent(new CustomEvent('titles:cleared'));
                 // Fire event to notify useCalendar to clear tasks
                 window.dispatchEvent(new CustomEvent('tasks:cleared'));
                 
@@ -340,9 +348,27 @@ const Dashboard: React.FC = () => {
         const handleTitleChange = () => {
             setSelectedTitleState(getSelectedTitle());
         };
+        
+        const handleTitlesRestored = () => {
+            console.log('[Dashboard] Titles restored, updating UI');
+            setUnlockedTitles(getUnlockedTitles());
+            setSelectedTitleState(getSelectedTitle());
+        };
+        
+        const handleTitlesCleared = () => {
+            console.log('[Dashboard] Titles cleared, clearing UI');
+            setUnlockedTitles([]);
+            setSelectedTitleState(null);
+        };
 
         window.addEventListener('selectedTitleChanged', handleTitleChange as EventListener);
-        return () => window.removeEventListener('selectedTitleChanged', handleTitleChange as EventListener);
+        window.addEventListener('titles:restored', handleTitlesRestored);
+        window.addEventListener('titles:cleared', handleTitlesCleared);
+        return () => {
+            window.removeEventListener('selectedTitleChanged', handleTitleChange as EventListener);
+            window.removeEventListener('titles:restored', handleTitlesRestored);
+            window.removeEventListener('titles:cleared', handleTitlesCleared);
+        };
     }, []);
 
     // Listen for pet switches
@@ -557,9 +583,14 @@ const Dashboard: React.FC = () => {
             localStorage.removeItem(BRONZE_CRATE_KEY);
             localStorage.removeItem(QUESTS_KEY);
             localStorage.removeItem('adhd_tasks'); // Clear tasks on logout
+            localStorage.removeItem('adhd_unlocked_titles'); // Clear titles on logout
+            localStorage.removeItem('adhd_selected_title'); // Clear selected title on logout
             
             // Fire event to notify useCalendar to clear tasks
             window.dispatchEvent(new CustomEvent('tasks:cleared'));
+            
+            // Fire event to notify UI to clear titles
+            window.dispatchEvent(new CustomEvent('titles:cleared'));
             
             // Reset all game state WITHOUT syncing to Firestore
             resetXp(false); // Don't sync the reset to Firestore
