@@ -29,17 +29,25 @@ export const saveGameProgress = async (progress: Partial<GameProgress>) => {
       return;
     }
 
-    const progressData = {
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    
+    // Load existing gameProgress first to merge properly
+    const existingDoc = await getDoc(userDocRef);
+    const existingGameProgress = existingDoc.exists() ? (existingDoc.data()?.gameProgress || {}) : {};
+    
+    // Merge new progress with existing data
+    const mergedProgress = {
+      ...existingGameProgress,
       ...progress,
       lastUpdated: new Date().toISOString(),
     };
 
-    const userDocRef = doc(db, 'users', currentUser.uid);
+    console.log('[gameProgress] Merging:', { existing: existingGameProgress, new: progress, merged: mergedProgress });
     
     // Use setDoc with merge to handle both new and existing docs
-    await setDoc(userDocRef, { gameProgress: progressData }, { merge: true });
+    await setDoc(userDocRef, { gameProgress: mergedProgress }, { merge: true });
 
-    console.log('[gameProgress] ✅ Saved to Firestore:', progressData);
+    console.log('[gameProgress] ✅ Saved to Firestore:', mergedProgress);
   } catch (error) {
     console.error('[gameProgress] ❌ Error saving to Firestore:', error);
     // Don't throw - allow game to continue even if save fails
