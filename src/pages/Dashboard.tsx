@@ -284,6 +284,9 @@ const Dashboard: React.FC = () => {
                 localStorage.removeItem(QUESTS_KEY);
                 localStorage.removeItem('adhd_tasks'); // Clear tasks on logout
                 
+                // Fire event to notify useCalendar to clear tasks
+                window.dispatchEvent(new CustomEvent('tasks:cleared'));
+                
                 // Reset all game state
                 resetXp(false); // Don't sync - we're logging out
                 setGems(0);
@@ -554,6 +557,9 @@ const Dashboard: React.FC = () => {
             localStorage.removeItem(BRONZE_CRATE_KEY);
             localStorage.removeItem(QUESTS_KEY);
             localStorage.removeItem('adhd_tasks'); // Clear tasks on logout
+            
+            // Fire event to notify useCalendar to clear tasks
+            window.dispatchEvent(new CustomEvent('tasks:cleared'));
             
             // Reset all game state WITHOUT syncing to Firestore
             resetXp(false); // Don't sync the reset to Firestore
