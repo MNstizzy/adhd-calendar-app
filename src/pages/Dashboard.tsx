@@ -202,8 +202,17 @@ const Dashboard: React.FC = () => {
                     console.error('[Auth] Error loading profile from Firestore:', error);
                 }
             } else {
-                // User is logged out
+                // User is logged out - reset profile to guest
                 setIsLoggedIn(false);
+                setProfile({
+                    username: 'Guest',
+                    hashtag: '0000',
+                    avatar: '👤',
+                    customAvatarUrl: undefined,
+                    tasksCompleted: 0,
+                    eventsCreated: 0
+                });
+                localStorage.removeItem(PROFILE_KEY);
             }
         });
 
